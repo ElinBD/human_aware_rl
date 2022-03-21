@@ -17,7 +17,7 @@ from human_aware_rl.human.data_processing_utils import convert_joint_df_trajs_to
 # HIGH LEVEL METHODS #
 ######################
 
-def get_human_human_trajectories(layouts, dataset_type='train', data_path=None, **kwargs):
+def get_human_human_trajectories(layouts, dataset_type='train', data_path=None, cat_player_ids=[], **kwargs):
     """
     Get human-human trajectories for a layout. Automatically 
 
@@ -50,7 +50,7 @@ def get_human_human_trajectories(layouts, dataset_type='train', data_path=None, 
     
     # For each data path, load data once and parse trajectories for all corresponding layouts
     for data_path in data_path_to_layouts:
-        curr_data = get_trajs_from_data(curr_data_path, layouts=[layout], **kwargs)[0]
+        curr_data = get_trajs_from_data(curr_data_path, cat_player_ids, layouts=[layout], **kwargs)[0]
         data = append_trajectories(data, curr_data)
 
     # Return all accumulated data for desired layouts
@@ -138,7 +138,7 @@ def csv_to_df_pickle(csv_path, out_dir, out_file_prefix, button_presses_threshol
 # DATAFRAME TO TRAJECTORIES #
 #############################
 
-def get_trajs_from_data(data_path, layouts, silent=True, **kwargs):
+def get_trajs_from_data(data_path, cat_player_ids, layouts, silent=True, **kwargs):
     """
     Converts and returns trajectories from dataframe at `data_path` to overcooked trajectories.
     """
@@ -150,6 +150,7 @@ def get_trajs_from_data(data_path, layouts, silent=True, **kwargs):
     trajs, info = convert_joint_df_trajs_to_overcooked_single(
         main_trials,
         layouts,
+        cat_player_ids,
         silent=silent,
         **kwargs
     )

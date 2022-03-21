@@ -1,4 +1,5 @@
 import json, time
+from cv2 import CAP_PROP_INTELPERC_DEPTH_FOCAL_LENGTH_HORZ
 import numpy as np
 
 from overcooked_ai_py.agents.benchmarking import AgentEvaluator
@@ -103,7 +104,8 @@ def df_traj_to_python_joint_traj(traj_df, check_trajectories=True, silent=True, 
     return trajectories
 
 
-def convert_joint_df_trajs_to_overcooked_single(main_trials, layouts, silent=False, **kwargs):
+def convert_joint_df_trajs_to_overcooked_single(main_trials, layouts, 
+        cat_player_ids, silent=False, **kwargs):
     """
     Takes in a dataframe `main_trials` containing joint trajectories, and extract trajectories of workers `worker_ids`
     on layouts `layouts`, with specific options.
@@ -138,11 +140,16 @@ def convert_joint_df_trajs_to_overcooked_single(main_trials, layouts, silent=Fal
         for trial_id in trial_ids:
             # Get an single game
             one_traj_df = main_trials[main_trials['trial_id'] == trial_id]
+            print(one_traj_df.columns)
 
             # Get python trajectory data and information on which player(s) was/were human
             joint_traj_data = df_traj_to_python_joint_traj(one_traj_df, silent=silent,**kwargs)
 
             human_idx = get_human_player_index_for_df(one_traj_df)
+            if cat_player_ids:
+                player_ids = get_player_ids_in_cat(one_traj_df, cat_player_ids)
+                human_idx = list(set(human_idx) & set(player_ids))
+            print(human_idx)
             human_indices.append(human_idx)
 
             # Convert joint trajectories to single agent trajectories, appending recovered info to the `trajectories` dict
@@ -152,6 +159,15 @@ def convert_joint_df_trajs_to_overcooked_single(main_trials, layouts, silent=Fal
         print("Number of trajectories processed for each layout: {}".format(num_trials_for_layout))
     return single_agent_trajectories, human_indices
 
+def get_player_ids_in_cat(one_traj_df, cat_player_ids):
+    player_ids_in_cat = []
+    datapoint = one_traj_df.iloc[0]
+    if datapoint['player_0_id'] in cat_player_ids:
+        player_ids_in_cat.append(0)
+    if datapoint['player_1_id'] in cat_player_ids:
+        player_ids_in_cat.append(1)
+
+    return player_ids_in_cat
 
 def get_human_player_index_for_df(one_traj_df):
     """Determines which player index had a human player"""
@@ -167,13 +183,12 @@ def get_human_player_index_for_df(one_traj_df):
     return human_player_indices
 
 
-def joint_state_trajectory_to_single(trajectories, joint_traj_data, player_indices_to_convert=None, featurize_states=True,
+def joint_state_trajectory_to_single(trajectories, joint_traj_data, player_indices_to_convert=None, cat_player_ids=[], featurize_states=True,
                                      silent=False, **kwargs):
     """
     Take a joint trajectory and split it into two single-agent trajectories, adding data to the `trajectories` dictionary
     player_indices_to_convert: which player indexes' trajs we should return
     """
-
     env = joint_traj_data['metadatas']['env'][0]
 
     assert len(joint_traj_data['ep_states']) == 1, "This method only takes in one trajectory"
@@ -182,7 +197,6 @@ def joint_state_trajectory_to_single(trajectories, joint_traj_data, player_indic
 
     # Getting trajectory for each agent
     for agent_idx in player_indices_to_convert:
-
         ep_obs, ep_acts, ep_dones = [], [], []
         for i in range(len(states)):
             state, action = states[i], joint_actions[i][agent_idx]

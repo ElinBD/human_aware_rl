@@ -40,7 +40,7 @@ OLD_SCHEMA = set(['Unnamed: 0', 'Unnamed: 0.1', 'cur_gameloop', 'datetime', 'is_
 NEW_SCHEMA = set(['state', 'joint_action', 'reward', 'time_left', 'score', 'time_elapsed', 'cur_gameloop', 'layout', 
               'layout_name', 'trial_id', 'player_0_id', 'player_1_id', 'player_0_is_human', 'player_1_is_human'])
 
-LAYOUTS_WITH_DATA_2019 = set(['asymmetric_advantages', 'coordination_ring', 'cramped_room', 'random0', 'random3'])
+LAYOUTS_WITH_DATA_2019 = set(['asymmetric_advantages', 'coordination_ring', 'cramped_room', 'random0', 'random3', 'avg'])
 LAYOUTS_WITH_DATA_2020 = set(['asymmetric_advantages_tomato', 'counter_circuit', 'cramped_corridor', 'inverse_marshmallow_experiment', 'marshmallow_experiment', 'marshmallow_experiment_coordination', 'soup_coordination', 'you_shall_not_pass'])
 
 LAYOUTS_WITH_DATA = LAYOUTS_WITH_DATA_2019.union(LAYOUTS_WITH_DATA_2020)
